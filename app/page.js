@@ -1,113 +1,101 @@
-import Image from "next/image";
+import React from 'react'
 
-export default function Home() {
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+
+const page = async () => {
+  const  res = await fetch("http://localhost:3000/api/record/" ,{cache:"no-cache"});
+  const records = await res.json()
+  
+  const handleSubmit = async(formdata)=>{
+    "use server"
+     let name = formdata.get("name");
+     let contact = formdata.get("contact")
+     let city= formdata.get("city")
+     let email = formdata.get("email")
+     let data = {name,contact,city,email}
+
+    const  res= await fetch("http://localhost:3000/api/record/" ,{method:"POST",body:JSON.stringify(data)});
+   const records = await res.json()
+   redirect("/")
+  
+  }
+  const handleDelete = async(id,formdata)=>{
+    "use server"
+    const res = await fetch(`http://localhost:3000/api/record/${id}`,{method:"DELETE"})
+    const records = await res.json()
+   redirect("/");
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div>
+
+      <div className="flex px-10 py-5 gap-10">
+        <div className="w-1/3">
+          <form action={handleSubmit} method="POST" className="border p-5 rounded">
+            <div className="mb-3 flex flex-col gap-3">
+              <label htmlFor="name">Name</label>
+              <input type="text" id="name" name="name" className="border text-black w-full rounded px-2 py-2" placeholder="enter your name"/>
+            </div>
+            <div className="mb-3 fl ex flex-col gap-3">
+              <label htmlFor="contact">contact</label>
+              <input type="text" id="contact" name="contact" className="border text-black rounded w-full px-2 py-2" placeholder="enter your contact"/>
+            </div>
+            <div className="mb-3 flex flex-col gap-3">
+              <label htmlFor="city">city</label>
+              <input type="text" id="city" name="city" className="border rounded text-black w-full px-2 py-2" placeholder="enter your city"/>
+            </div>
+            <div className="mb-3 flex flex-col gap-3">
+              <label htmlFor="email">email</label>
+              <input type="text" id="email" name="email" className="border text-black rounded w-full px-2 py-2" placeholder="enter your email"/>
+            </div>
+            <div className="mb-3 flex flex-1">
+              <button type="submit" className="bg-red-500 rounded text-white px-3 py-3 w-full">create Record</button>
+            </div>
+          </form>
+        </div>
+        <div className="w-2/3">
+          <table className="border w-full rounded p-4">
+            <thead>
+              <tr>
+              <th className="border p-2 text-center">Id</th>
+                <th className="border p-2 text-center">Name</th>
+                <th className="border p-2 text-center">Contact</th>
+                <th className="border p-2 text-center">City</th>
+                <th className="border p-2 text-center">Email</th>
+                <th className="border p-2 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                records.map((record,index) =>{
+                  let id = record._id
+                  let handleDeletewithId = handleDelete.bind(null,id)
+                return(
+                 
+                  <tr key={index}>
+                <td className="border p-2 text-center">{index+1}</td>
+                <td className="border p-2 text-center">{record.name}</td>
+                <td className="border p-2 text-center">{record.contact}</td>
+                <td className="border p-2 text-center">{record.city}</td>
+                <td className="border p-2 text-center">{record.email}</td>
+                <td className="border p-2 text-center flex gap-3 ">
+                  <form action={handleDeletewithId} method="POST">
+                    <button type='submit' className='bg-red-900 rounded px-3 py-2'><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg></button>
+                  </form>
+                  <Link href={`/edit/${record._id}`} className='bg-cyan-600 rounded text-white px-2 py-2'><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg></Link>
+                </td>
+              </tr>
+                )
+                })
+              }
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    </div>
+  )
 }
+
+export default page
